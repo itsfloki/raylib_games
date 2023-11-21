@@ -18,11 +18,20 @@ int main(void)
     int paddleSpeed = 300;
 
     InitWindow(screenWidth, screenHeight, "Breakout game");
+    InitAudioDevice();
+
+    Music wall_collision_music = LoadMusicStream("resources/crash.ogg");
+    Music paddle_collision_music = LoadMusicStream("resources/paddle_collision.ogg");
+    wall_collision_music.looping = false;
+    paddle_collision_music.looping = false;
 
     SetTargetFPS(60);
 
     while (!WindowShouldClose())
     {
+        UpdateMusicStream(wall_collision_music);
+        UpdateMusicStream(paddle_collision_music);
+
         // paddle movement
         if(IsKeyDown(KEY_RIGHT))
         {
@@ -41,22 +50,32 @@ int main(void)
         {
             reflectX = true;
             reflectY = true;
+            StopMusicStream(paddle_collision_music);
+            PlayMusicStream(paddle_collision_music);
         }
 
         if(ballPos.x <= 0)                       // left wall collision
         {
             reflectX = ballDirX < 0;
+            StopMusicStream(wall_collision_music);
+            PlayMusicStream(wall_collision_music);
         }
         else if(ballPos.x >= screenWidth) {      // right wall collision
             reflectX = ballDirX > 0;
+            StopMusicStream(wall_collision_music);
+            PlayMusicStream(wall_collision_music);
         }
         else if(ballPos.y <= 0)                  // top wall collision
         {
             reflectY = ballDirY < 0;
+            StopMusicStream(wall_collision_music);
+            PlayMusicStream(wall_collision_music);
         }
         else if(ballPos.y >= screenHeight)       // bottom wall collision
         {
             reflectY = ballDirY > 0;
+            StopMusicStream(wall_collision_music);
+            PlayMusicStream(wall_collision_music);
         } 
         
         // check reflection of ball

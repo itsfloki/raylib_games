@@ -1,4 +1,6 @@
+#include <stdio.h>
 #include "raylib.h"
+#include "raymath.h"
 
 int main(void)
 {
@@ -6,21 +8,14 @@ int main(void)
     const int screenHeight = 550;
 
     // ball position & motion
-    int posX = screenWidth / 2;
-    int posY = screenHeight / 2;
-    int ball_dir_x, ball_dir_y;
+    Vector2 ballPos = { (float) screenWidth / 2, (float) screenHeight / 2 };
+    int ballDirX, ballDirY;
 
-    ball_dir_x = ball_dir_y = 3;
+    ballDirX = ballDirY = 240;
 
     // paddle properties
-    int paddleX, paddleY, paddleWidth, paddleHeight;
-
-    paddleWidth = 150;
-    paddleHeight = 10;
-
-    paddleX = screenWidth / 2 - 50;
-    paddleY = 500;
-    
+    Rectangle paddle = { (float) screenWidth / 2 - 50, 500.0, 150.0, 10.0 };
+    int paddleSpeed = 300;
 
     InitWindow(screenWidth, screenHeight, "Breakout game");
 
@@ -29,52 +24,60 @@ int main(void)
     while (!WindowShouldClose())
     {
         // paddle movement
-        if(IsKeyPressed(KEY_RIGHT))
+        if(IsKeyDown(KEY_RIGHT))
         {
-            paddleX += 25;
+            paddle.x += paddleSpeed * GetFrameTime();
         }
-        if(IsKeyPressed(KEY_LEFT))
+        if(IsKeyDown(KEY_LEFT))
         {
-            paddleX -= 25;
-        }
-
-        bool reflect_x = false;
-        bool reflect_y = false;
-
-        if(posX <= 0)                       // left wall collision
-        {
-            reflect_x = ball_dir_x < 0;
-        }
-        else if(posX >= screenWidth) {      // right wall collision
-            reflect_x = ball_dir_x > 0;
+            paddle.x -= paddleSpeed * GetFrameTime();
         }
 
-        if(posY <= 0)                       // top wall collision
+        bool reflectX = false;
+        bool reflectY = false;
+
+        // check collision of ball with paddle
+        if(CheckCollisionCircleRec(ballPos, 15, paddle))
         {
-            reflect_y = ball_dir_y < 0;
+            reflectX = true;
+            reflectY = true;
         }
-        else if(posY >= screenHeight)       // bottom wall collision
+
+        if(ballPos.x <= 0)                       // left wall collision
         {
-            reflect_y = ball_dir_y > 0;
+            reflectX = ballDirX < 0;
+        }
+        else if(ballPos.x >= screenWidth) {      // right wall collision
+            reflectX = ballDirX > 0;
+        }
+        else if(ballPos.y <= 0)                  // top wall collision
+        {
+            reflectY = ballDirY < 0;
+        }
+        else if(ballPos.y >= screenHeight)       // bottom wall collision
+        {
+            reflectY = ballDirY > 0;
         } 
-
-        if(reflect_x) {
-            ball_dir_x = -ball_dir_x;
+        
+        // check reflection of ball
+        if(reflectX)
+        {
+            ballDirX = -ballDirX;
         }
-        if(reflect_y) {
-            ball_dir_y = -ball_dir_y;
+        if(reflectY)
+        {
+            ballDirY = -ballDirY;
         }
 
-        posX += ball_dir_x;
-        posY += ball_dir_y;
-
+        ballPos.x += ballDirX * GetFrameTime();
+        ballPos.y += ballDirY * GetFrameTime();
 
         BeginDrawing();
 
             ClearBackground(BLACK);
 
-            DrawCircle(posX, posY, 15, WHITE);
-            DrawRectangle(paddleX, paddleY, paddleWidth, paddleHeight, RED);
+            DrawCircleV(ballPos, 15, RED);
+            DrawRectangleRec(paddle, YELLOW);
 
         EndDrawing();
     }
